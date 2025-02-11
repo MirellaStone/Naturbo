@@ -1,0 +1,122 @@
+# This example requires the 'members' and 'message_content' privileged intents to function.
+
+import discord
+from discord.ext import commands
+import random
+import os
+
+description = '''An example bot to showcase the discord.ext.commands extension
+module.
+
+There are a number of utility commands being showcased here.'''
+
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='/', description=description, intents=intents)
+
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('------')
+
+
+@bot.command()
+async def add(ctx, left: int, right: int):
+    """Adds two numbers together."""
+    await ctx.send(left + right)
+
+@bot.command()
+async def randtip(ctx):
+    """Read a message to save the world."""
+    randlist = ["Grow your own food: Organic products generate less environmental pollution since no fertilizers are used. We recommend that you create a vegetable garden at home, this way you will enjoy fresh food full of nutrients.",
+                "Plant trees: Trees are essential for the world, they produce oxygen, reduce carbon dioxide, absorb polluting gases, regulate temperature, among other benefits. So now you know, plant a tree and contribute to caring for the environment.",
+                "Save water: Water is an essential and scarce resource that we must use responsibly. Turning off the tap while brushing your teeth, taking a 5-minute shower, collecting water from the shower head while you bathe are small actions that help save water.",
+                "Separate the garbage: It is important to separate waste into different containers: organic, glass, cardboard, plastics and toxic waste. For your health, take care of your environment.",
+                "Reuse everything you can: Give your belongings a second life before throwing them away in order to save money and avoid buying everything new. It could be your clothes, toys or some household utensils.",
+                "Connect with nature: Nature protects you, heals you, feeds you and gives you everything you need to live and feel well. Taking care of it, valuing it and appreciating it is everyone's job."]
+ 
+    Tip = random.choice(randlist)
+    await ctx.send(Tip)
+
+
+
+@bot.command()
+async def roll(ctx, dice: str):
+    """Rolls a dice in NdN format."""
+    try:
+        rolls, limit = map(int, dice.split('d'))
+    except Exception:
+        await ctx.send('Format has to be in NdN!')
+        return
+
+    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+    await ctx.send(result)
+
+
+@bot.command(description='For when you wanna settle the score some other way')
+async def choose(ctx, *choices: str):
+    """Chooses between multiple choices."""
+    await ctx.send(random.choice(choices))
+
+
+@bot.command()
+async def repeat(ctx, times: int, content='repeating...'):
+    """Repeats a message multiple times."""
+    for i in range(times):
+        await ctx.send(content)
+
+
+@bot.command()
+async def joined(ctx, member: discord.Member):
+    """Says when a member joined."""
+    await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
+
+@bot.command()
+async def recycle(ctx, object):
+    """A creative craft to protect our world."""
+    if object == "paper":
+        await ctx.send('https://youtu.be/H25t8VL7Plg') #LINKS TO YOUTUBE
+
+    elif object == 'cardboard':
+        await ctx.send("https://youtu.be/iXcnix9cQUc") #LINKS TO YOUTUBE
+
+    elif object == "plastic":
+        await ctx.send ("https://youtu.be/x1ixw6g0QIM") #LINKS TO YOUTUBE
+
+@bot.command()
+async def mem(ctx):
+    """Is for generate random memes."""
+
+    # Obtiene la lista de archivos en el directorio 'img'
+    img_files = os.listdir('img')
+    
+    # Selecciona un archivo al azar
+    img = random.choice(img_files)
+    
+    # Abre el archivo seleccionado
+    with open(f'img/{img}', 'rb') as f:
+        picture = discord.File(f)
+        
+        # Envía el archivo como mensaje
+        await ctx.send(file=picture)
+
+@bot.group()
+async def cool(ctx):
+    """Says if a user is cool.
+
+    In reality this just checks if a subcommand is being invoked.
+    """
+    if ctx.invoked_subcommand is None:
+        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
+
+
+@cool.command(name='bot')
+async def _bot(ctx):
+    """Is the bot cool?"""
+    await ctx.send('Yes, the bot is cool.')
+
+
+bot.run('YOUR TOKEN HERE')
